@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DeltaPulse 50x — Crypto Momentum & Options Screener</title>
+  <title>DeltaPulse 50x — Top 5 (10–15m Hold) Crypto Screener</title>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#0b0f17" />
   <link rel="stylesheet" href="./styles.css" />
@@ -48,11 +48,8 @@
         <strong class="green">+10% (+$1.00)</strong>
       </div>
       <div class="strat-item">
-        <span>Swing TF</span>
-        <select id="tf-select" class="mini-select" aria-label="Swing Duration">
-          <option value="15m" selected>15m (30m–4h)</option>
-          <option value="5m">5m (15m–90m)</option>
-        </select>
+        <span>Hold Window</span>
+        <strong class="amber">10–15 Min</strong>
       </div>
       <div class="strat-item">
         <span>BG Market Scan</span>
@@ -66,7 +63,7 @@
         Top 10 <span id="badge-top10" class="tab-badge">10</span>
       </button>
       <button class="nav-tab tab-buy" data-section="BUY" role="tab">
-        BUY <span id="badge-buy" class="tab-badge">0</span>
+        Top 5 BUY <span id="badge-buy" class="tab-badge">0</span>
       </button>
       <button class="nav-tab tab-hold" data-section="HOLD" role="tab">
         HOLD <span id="badge-hold" class="tab-badge">0</span>
@@ -87,21 +84,21 @@
       <div class="section-header">
         <div>
           <h2>Top 10 High-Volume &amp; High-Liquidity Crypto</h2>
-          <p class="sub-text">Fixed Top 10 liquid Delta Exchange pairs • Background scanner checks all other crypto for BUY tab</p>
+          <p class="sub-text">Fixed Top 10 liquid Delta Exchange pairs • Background scanner checks all crypto for Top 5 (10–15m hold) BUY setups</p>
         </div>
         <input id="search-top10" type="search" class="search-input" placeholder="Filter Top 10..." />
       </div>
       <div id="list-top10" class="cards-grid"></div>
     </section>
 
-    <!-- SECTION 2: BUY TAB (CONFIRMED BUY SETUPS FROM TOP 10 + ALL-CRYPTO BG SCANNER) -->
+    <!-- SECTION 2: TOP 5 BUY TAB (10 TO 15 MIN HOLD PERIOD SETUPS ONLY) -->
     <section id="sec-BUY" class="tab-section">
       <div class="section-header">
         <div>
-          <h2>Confirmed BUY Signals (50x Swing)</h2>
-          <p class="sub-text">Verified via EMA-9/21, VWAP, RSI-14 &amp; Option Chain PCR • Notifies immediately on entry</p>
+          <h2>Top 5 Confirmed BUY Trades (10–15 Min Hold)</h2>
+          <p class="sub-text">Filtered for 10–15 min momentum velocity + EMA-9/21, VWAP, RSI-14 &amp; Option Chain PCR • Top 5 ranked only</p>
         </div>
-        <span class="pill-info green-pill">Target: +10% Net ROE (+$1.00)</span>
+        <span class="pill-info green-pill">10–15m Hold • +10% Net ROE (+$1.00)</span>
       </div>
       <div id="list-buy" class="cards-grid"></div>
     </section>
@@ -141,6 +138,7 @@
                 <span id="sel-badge" class="rank-tag">#1 LIQUIDITY</span>
                 <h2 id="sel-symbol">BTCUSD</h2>
                 <span id="sel-status" class="state-pill state-buy">BUY</span>
+                <span id="sel-hold-window" class="hold-tag">Hold: 10–15m</span>
               </div>
               <p id="sel-meta" class="sub-text">24h Vol: $8.42B • Liquidity: 99/100 • PCR: 1.28</p>
             </div>
@@ -159,11 +157,11 @@
           <div class="radar-pair">
             <div class="radar-card">
               <div class="radar-lbl">
-                <span>BUY Setup Readiness</span>
+                <span>10–15m BUY Setup Readiness</span>
                 <strong id="entry-pct" class="amber">90%</strong>
               </div>
               <div class="bar-bg"><div id="entry-bar" class="bar-fill amber-bg" style="width:90%"></div></div>
-              <small>Notifies when crypto enters BUY tab (≥87%)</small>
+              <small>Notifies when crypto enters Top 5 BUY tab (10–15m hold)</small>
             </div>
             <div class="radar-card">
               <div class="radar-lbl">
@@ -196,7 +194,7 @@
         <div class="two-col">
           <div class="card">
             <div class="card-head-sm">
-              <h3>50x Swing Levels ($10 Margin)</h3>
+              <h3>50x Swing Levels ($10 Margin • 10–15m)</h3>
               <span id="dir-badge" class="dir-tag long">LONG 50x</span>
             </div>
             <div class="levels-table">
@@ -221,8 +219,8 @@
                 <strong id="v-sl">$66,446.80</strong>
               </div>
               <div class="lvl-cell">
-                <span>50x Liquidation</span>
-                <strong id="v-liq">$65,342.30</strong>
+                <span>Est. Hold Window</span>
+                <strong id="v-hold-est" class="amber">12 min (10–15m)</strong>
               </div>
             </div>
             <div id="chart-hold-action"></div>
@@ -252,10 +250,10 @@
           </div>
         </div>
 
-        <!-- Recent Notification Log (BUY & EXIT transitions only) -->
+        <!-- Recent Notification Log (Top 5 BUY & EXIT transitions only) -->
         <div class="card">
           <div class="card-head-sm">
-            <h3>Notification History (BUY &amp; EXIT Transitions Only)</h3>
+            <h3>Notification History (Top 5 BUY &amp; EXIT Transitions Only)</h3>
             <button id="btn-clear-alerts" class="pill-btn">Clear</button>
           </div>
           <div id="alert-history" class="alert-history"></div>

@@ -125,15 +125,6 @@ body {
 .strat-item span { font-size: 0.63rem; color: var(--muted); text-transform: uppercase; }
 .strat-item strong { font-size: 0.76rem; }
 
-.mini-select {
-  background: transparent;
-  color: var(--text);
-  border: none;
-  font-size: 0.75rem;
-  font-weight: 700;
-  outline: none;
-}
-
 /* Main 5-Section Navigation Tabs */
 .main-tabs {
   display: grid;
@@ -147,9 +138,9 @@ body {
   border: none;
   border-bottom: 3px solid transparent;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  padding: 9px 4px;
+  padding: 9px 3px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -227,11 +218,13 @@ body {
 }
 
 .asset-card.exit-card { border-color: rgba(245, 158, 11, 0.55); }
-.asset-card.buy-card { border-color: rgba(16, 185, 129, 0.4); }
+.asset-card.buy-card { border-color: rgba(16, 185, 129, 0.45); }
 
 .ac-top { display: flex; justify-content: space-between; align-items: center; }
 .ac-left { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.rank-num { font-size: 0.68rem; font-weight: 700; color: var(--muted); background: var(--elev); padding: 2px 6px; border-radius: 5px; }
+.rank-num { font-size: 0.67rem; font-weight: 700; color: var(--muted); background: var(--elev); padding: 2px 6px; border-radius: 5px; }
+.rank-top5 { font-size: 0.67rem; font-weight: 800; color: var(--green); background: var(--green-bg); padding: 2px 6px; border-radius: 5px; }
+.hold-tag { font-size: 0.66rem; font-weight: 700; color: var(--amber); background: var(--amber-bg); padding: 2px 6px; border-radius: 5px; }
 .sym-txt { font-weight: 800; font-size: 0.96rem; }
 .ac-right { text-align: right; }
 .price-txt { font-weight: 800; font-size: 0.94rem; font-variant-numeric: tabular-nums; }
@@ -301,7 +294,7 @@ body {
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
 
 .selected-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-.sym-line { display: flex; align-items: center; gap: 8px; }
+.sym-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .sym-line h2 { font-size: 1.25rem; font-weight: 800; }
 .rank-tag { font-size: 0.66rem; font-weight: 700; padding: 2px 6px; border-radius: 5px; background: var(--blue-bg); color: var(--blue); }
 
