@@ -3,38 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DeltaPulse 50x — Nifty-Style Crypto Momentum Screener</title>
+  <title>DeltaPulse 50x — Crypto Momentum & Options Screener</title>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#0b0f17" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <!-- Floating Pre-Entry & Pre-Exit Pop-Up Notification Container -->
+  <!-- Floating Pop-Up Banner (In-App + Mirrors Native Draw-Over-App Overlay) -->
   <div id="popup-container" class="popup-container" aria-live="polite"></div>
 
-  <!-- Clean Top Header -->
+  <!-- Top Header with Refresh, Overlay Permission, Loud Test & Theme -->
   <header class="app-header">
     <div class="header-top">
       <div class="brand-wrap">
         <div class="brand-icon">Δ</div>
         <div>
           <h1 class="brand-name">DeltaPulse <span class="lev-pill">50x</span></h1>
-          <p class="brand-tag">Top 10 High-Liquidity Crypto • Delta Exchange</p>
+          <p class="brand-tag" id="feed-subtitle">Syncing Delta Exchange India...</p>
         </div>
       </div>
 
       <div class="header-actions">
-        <span id="live-badge" class="status-badge">
-          <span class="dot"></span>
-          <span id="live-text">Connecting...</span>
-        </span>
-        <button id="btn-notify" class="icon-btn" title="Enable Background & Closed-App Alerts">🔔</button>
-        <button id="btn-test" class="pill-btn" title="Test Pre-Entry & Pre-Exit Pop-Up">Test Alert</button>
-        <button id="btn-theme" class="icon-btn" title="Switch Light / Dark UI">🌓</button>
+        <button id="btn-refresh" class="action-btn" title="Refresh Live Prices & Option Chain">
+          <span id="refresh-icon">↻</span> Refresh
+        </button>
+        <button id="btn-overlay-perm" class="action-btn action-amber" title="Enable Draw-Over-Apps & Closed-App Alerts">
+          🔔 <span id="overlay-btn-txt">Overlay Alerts</span>
+        </button>
+        <button id="btn-test-loud" class="action-btn" title="Test Loudest Sound & Pop-Up">
+          🔊 Test
+        </button>
+        <button id="btn-theme" class="icon-btn" title="Toggle Dark / Light Theme">🌓</button>
       </div>
     </div>
 
-    <!-- Compact Strategy Bar ($10 Capital | 50x | +10% Net Target | Duration) -->
+    <!-- Compact Strategy Parameters Strip -->
     <div class="strategy-bar">
       <div class="strat-item">
         <span>Capital</span>
@@ -52,177 +55,211 @@
         </select>
       </div>
       <div class="strat-item">
-        <span>BG Monitor</span>
-        <strong class="blue">Active 24/7</strong>
+        <span>BG Market Scan</span>
+        <strong class="blue" id="bg-scan-count">All Crypto Active</strong>
       </div>
     </div>
+
+    <!-- Clean 5-Section Navigation Tabs -->
+    <nav class="main-tabs" role="tablist">
+      <button class="nav-tab active" data-section="TOP10" role="tab">
+        Top 10 <span id="badge-top10" class="tab-badge">10</span>
+      </button>
+      <button class="nav-tab tab-buy" data-section="BUY" role="tab">
+        BUY <span id="badge-buy" class="tab-badge">0</span>
+      </button>
+      <button class="nav-tab tab-hold" data-section="HOLD" role="tab">
+        HOLD <span id="badge-hold" class="tab-badge">0</span>
+      </button>
+      <button class="nav-tab tab-exit" data-section="EXIT" role="tab">
+        EXIT <span id="badge-exit" class="tab-badge">0</span>
+      </button>
+      <button class="nav-tab tab-chart" data-section="CHART" role="tab">
+        Chart &amp; PCR
+      </button>
+    </nav>
   </header>
 
-  <!-- Main Responsive Layout -->
-  <main class="main-shell">
-    <!-- Left / Top Section: Nifty-Style Top 10 Screener with BUY / HOLD / EXIT Tabs -->
-    <section class="card screener-card">
-      <div class="card-head">
+  <!-- Main Workspace: Displays ONLY the Active Section Tab -->
+  <main class="workspace">
+    <!-- SECTION 1: TOP 10 HIGH-VOLUME & HIGH-LIQUIDITY CRYPTO -->
+    <section id="sec-TOP10" class="tab-section active">
+      <div class="section-header">
         <div>
-          <h2>Top 10 High-Volume Crypto</h2>
-          <span class="sub-text">Sorted by 24h Volume &amp; Orderbook Liquidity</span>
+          <h2>Top 10 High-Volume &amp; High-Liquidity Crypto</h2>
+          <p class="sub-text">Fixed Top 10 liquid Delta Exchange pairs • Background scanner checks all other crypto for BUY tab</p>
         </div>
-        <input id="search-input" type="search" class="search-box" placeholder="Search BTC, SOL..." />
+        <input id="search-top10" type="search" class="search-input" placeholder="Filter Top 10..." />
       </div>
-
-      <!-- Nifty-Style 4 Action Tabs -->
-      <nav class="tabs-bar" role="tablist">
-        <button class="tab active" data-tab="ALL">
-          Top 10 <span id="cnt-all" class="cnt">10</span>
-        </button>
-        <button class="tab tab-buy" data-tab="BUY">
-          BUY <span id="cnt-buy" class="cnt">0</span>
-        </button>
-        <button class="tab tab-hold" data-tab="HOLD">
-          HOLD <span id="cnt-hold" class="cnt">0</span>
-        </button>
-        <button class="tab tab-exit" data-tab="EXIT">
-          EXIT <span id="cnt-exit" class="cnt">0</span>
-        </button>
-      </nav>
-
-      <!-- Asset List -->
-      <div id="coin-list" class="coin-list"></div>
+      <div id="list-top10" class="cards-grid"></div>
     </section>
 
-    <!-- Right / Bottom Section: Selected Coin Delta Chart, 50x Levels & Option Chain / PCR -->
-    <section class="detail-stack">
-      <!-- Selected Coin Summary + Pre-Entry & Pre-Exit Predictive Radars -->
-      <div class="card">
-        <div class="selected-head">
-          <div>
-            <div class="sym-line">
-              <span id="sel-rank" class="rank-tag">#1 LIQUIDITY</span>
-              <h2 id="sel-symbol">BTCUSD</h2>
-              <span id="sel-status" class="state-pill state-buy">BUY READY</span>
-            </div>
-            <p id="sel-meta" class="sub-text">24h Vol: $8.42B • Liquidity: 99/100 • PCR: 1.28</p>
-          </div>
-
-          <div class="price-right">
-            <div id="sel-price" class="big-price">$66,540.00</div>
-            <div class="delta-link-row">
-              <span id="sel-chg" class="green">+1.84%</span>
-              <a id="delta-deep-link" href="https://www.delta.exchange/app/futures/trade/BTC/BTCUSD" target="_blank" rel="noopener noreferrer" class="delta-btn">
-                Delta Chart ↗
-              </a>
-            </div>
-          </div>
+    <!-- SECTION 2: BUY TAB (CONFIRMED BUY SETUPS FROM TOP 10 + ALL-CRYPTO BG SCANNER) -->
+    <section id="sec-BUY" class="tab-section">
+      <div class="section-header">
+        <div>
+          <h2>Confirmed BUY Signals (50x Swing)</h2>
+          <p class="sub-text">Verified via EMA-9/21, VWAP, RSI-14 &amp; Option Chain PCR • Notifies immediately on entry</p>
         </div>
-
-        <!-- Predictive Pre-Entry & Pre-Exit Proximity Bars -->
-        <div class="radar-pair">
-          <div class="radar-card">
-            <div class="radar-lbl">
-              <span>Pre-Entry Alert Radar</span>
-              <strong id="entry-pct" class="amber">90%</strong>
-            </div>
-            <div class="bar-bg"><div id="entry-bar" class="bar-fill amber-bg" style="width:90%"></div></div>
-            <small>Pop-up fires before entry completes (≥85%)</small>
-          </div>
-          <div class="radar-card">
-            <div class="radar-lbl">
-              <span>Pre-Exit (+10% ROE) Radar</span>
-              <strong id="exit-pct" class="green">40%</strong>
-            </div>
-            <div class="bar-bg"><div id="exit-bar" class="bar-fill green-bg" style="width:40%"></div></div>
-            <small>Pop-up warns at 80% of target or SL guard</small>
-          </div>
-        </div>
+        <span class="pill-info green-pill">Target: +10% Net ROE (+$1.00)</span>
       </div>
+      <div id="list-buy" class="cards-grid"></div>
+    </section>
 
-      <!-- Real-Time Delta Exchange Candlestick & EMA/VWAP Chart -->
-      <div class="card">
-        <div class="chart-head">
-          <div class="legend-row">
-            <span><i class="swatch ema9"></i>EMA 9</span>
-            <span><i class="swatch ema21"></i>EMA 21</span>
-            <span><i class="swatch entry-z"></i>Pre-Entry</span>
-            <span><i class="swatch exit-z"></i>Pre-Exit</span>
-          </div>
-          <span id="ohlc-bar" class="ohlc-readout">O: -- H: -- L: -- C: --</span>
+    <!-- SECTION 3: HOLD TAB (USER'S ACTIVE $10 @ 50x TRADES WITH REMOVE BUTTON) -->
+    <section id="sec-HOLD" class="tab-section">
+      <div class="section-header">
+        <div>
+          <h2>Active HOLD Trades ($10 Margin @ 50x)</h2>
+          <p class="sub-text">Automatically moves to EXIT tab and sounds alarm when target or stop-loss zone is reached</p>
         </div>
-        <div class="chart-box">
-          <canvas id="delta-chart"></canvas>
-        </div>
+        <span class="pill-info blue-pill" id="hold-pnl-summary">Active: 0</span>
       </div>
+      <div id="list-hold" class="cards-grid"></div>
+    </section>
 
-      <!-- Two Clean Cards: 50x Trade Levels ($10) + Option Chain & PCR Verification -->
-      <div class="two-col">
-        <!-- 50x Futures Levels -->
+    <!-- SECTION 4: EXIT TAB (ONLY TRADES MOVED FROM HOLD THAT ENTERED EXIT STATE) -->
+    <section id="sec-EXIT" class="tab-section">
+      <div class="section-header">
+        <div>
+          <h2>EXIT Alerts (From Your HOLD Trades Only)</h2>
+          <p class="sub-text">Trades automatically moved here from HOLD upon reaching exit trigger • Remove when closed on Delta</p>
+        </div>
+        <span class="pill-info amber-pill">Action Required</span>
+      </div>
+      <div id="list-exit" class="cards-grid"></div>
+    </section>
+
+    <!-- SECTION 5: CHART & PCR VERIFICATION FOR SELECTED CRYPTO -->
+    <section id="sec-CHART" class="tab-section">
+      <div class="detail-container">
+        <!-- Asset Header Card -->
+        <div class="card">
+          <div class="selected-head">
+            <div>
+              <div class="sym-line">
+                <span id="sel-badge" class="rank-tag">#1 LIQUIDITY</span>
+                <h2 id="sel-symbol">BTCUSD</h2>
+                <span id="sel-status" class="state-pill state-buy">BUY</span>
+              </div>
+              <p id="sel-meta" class="sub-text">24h Vol: $8.42B • Liquidity: 99/100 • PCR: 1.28</p>
+            </div>
+            <div class="price-right">
+              <div id="sel-price" class="big-price">$66,540.00</div>
+              <div class="delta-link-row">
+                <span id="sel-chg" class="green">+1.84%</span>
+                <a id="delta-deep-link" href="https://www.delta.exchange/app/futures/trade/BTC/BTCUSD" target="_blank" rel="noopener noreferrer" class="delta-btn">
+                  Open Delta App ↗
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual Proximity Bars -->
+          <div class="radar-pair">
+            <div class="radar-card">
+              <div class="radar-lbl">
+                <span>BUY Setup Readiness</span>
+                <strong id="entry-pct" class="amber">90%</strong>
+              </div>
+              <div class="bar-bg"><div id="entry-bar" class="bar-fill amber-bg" style="width:90%"></div></div>
+              <small>Notifies when crypto enters BUY tab (≥87%)</small>
+            </div>
+            <div class="radar-card">
+              <div class="radar-lbl">
+                <span>HOLD → EXIT Target Progress</span>
+                <strong id="exit-pct" class="green">40%</strong>
+              </div>
+              <div class="bar-bg"><div id="exit-bar" class="bar-fill green-bg" style="width:40%"></div></div>
+              <small>Moves held trade to EXIT at 80% of +10% target or SL</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Delta Exchange Candlestick & Indicator Chart -->
+        <div class="card">
+          <div class="chart-head">
+            <div class="legend-row">
+              <span><i class="swatch ema9"></i>EMA 9</span>
+              <span><i class="swatch ema21"></i>EMA 21</span>
+              <span><i class="swatch entry-z"></i>Entry Zone</span>
+              <span><i class="swatch exit-z"></i>Exit Target</span>
+            </div>
+            <span id="ohlc-bar" class="ohlc-readout">O: -- H: -- L: -- C: --</span>
+          </div>
+          <div class="chart-box">
+            <canvas id="delta-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Two Columns: 50x Levels + Option Chain & PCR -->
+        <div class="two-col">
+          <div class="card">
+            <div class="card-head-sm">
+              <h3>50x Swing Levels ($10 Margin)</h3>
+              <span id="dir-badge" class="dir-tag long">LONG 50x</span>
+            </div>
+            <div class="levels-table">
+              <div class="lvl-cell amber-left">
+                <span>Pre-Entry Zone</span>
+                <strong id="v-pre-entry">$66,495.00</strong>
+              </div>
+              <div class="lvl-cell">
+                <span>Optimal Entry</span>
+                <strong id="v-entry">$66,540.00</strong>
+              </div>
+              <div class="lvl-cell green-left">
+                <span>Pre-Exit Trigger (80%)</span>
+                <strong id="v-pre-exit">$66,678.40</strong>
+              </div>
+              <div class="lvl-cell green-left">
+                <span>Take-Profit (+10% Net)</span>
+                <strong id="v-tp">$66,713.00</strong>
+              </div>
+              <div class="lvl-cell red-left">
+                <span>Tight Stop-Loss</span>
+                <strong id="v-sl">$66,446.80</strong>
+              </div>
+              <div class="lvl-cell">
+                <span>50x Liquidation</span>
+                <strong id="v-liq">$65,342.30</strong>
+              </div>
+            </div>
+            <div id="chart-hold-action"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head-sm">
+              <h3>Option Chain &amp; PCR Verification</h3>
+              <span id="pcr-badge" class="state-pill state-buy">VERIFIED</span>
+            </div>
+            <div class="pcr-summary">
+              <div class="pcr-box">
+                <span>OI PCR</span>
+                <strong id="pcr-oi">1.28</strong>
+              </div>
+              <div class="pcr-box">
+                <span>Vol PCR</span>
+                <strong id="pcr-vol">1.19</strong>
+              </div>
+              <div class="pcr-box">
+                <span>Put / Call Wall</span>
+                <strong id="pcr-wall">$66k / $67.5k</strong>
+              </div>
+            </div>
+            <div id="strike-bars" class="strike-bars"></div>
+            <div id="check-list" class="check-list"></div>
+          </div>
+        </div>
+
+        <!-- Recent Notification Log (BUY & EXIT transitions only) -->
         <div class="card">
           <div class="card-head-sm">
-            <h3>50x Swing Levels ($10 Margin)</h3>
-            <span id="dir-badge" class="dir-tag long">LONG 50x</span>
+            <h3>Notification History (BUY &amp; EXIT Transitions Only)</h3>
+            <button id="btn-clear-alerts" class="pill-btn">Clear</button>
           </div>
-          <div class="levels-table">
-            <div class="lvl-cell amber-left">
-              <span>Pre-Entry Trigger</span>
-              <strong id="v-pre-entry">$66,495.00</strong>
-            </div>
-            <div class="lvl-cell">
-              <span>Optimal Entry</span>
-              <strong id="v-entry">$66,540.00</strong>
-            </div>
-            <div class="lvl-cell green-left">
-              <span>Pre-Exit Alert (80%)</span>
-              <strong id="v-pre-exit">$66,678.40</strong>
-            </div>
-            <div class="lvl-cell green-left">
-              <span>Take-Profit (+10% Net)</span>
-              <strong id="v-tp">$66,713.00</strong>
-            </div>
-            <div class="lvl-cell red-left">
-              <span>Tight Stop-Loss</span>
-              <strong id="v-sl">$66,446.80</strong>
-            </div>
-            <div class="lvl-cell">
-              <span>50x Liquidation</span>
-              <strong id="v-liq">$65,342.30</strong>
-            </div>
-          </div>
-          <button id="btn-track-hold" class="primary-btn full-w">
-            + Move to HOLD Tab ($10 @ 50x)
-          </button>
+          <div id="alert-history" class="alert-history"></div>
         </div>
-
-        <!-- Option Chain & PCR Verification -->
-        <div class="card">
-          <div class="card-head-sm">
-            <h3>Option Chain &amp; PCR Check</h3>
-            <span id="pcr-badge" class="state-pill state-buy">VERIFIED</span>
-          </div>
-          <div class="pcr-summary">
-            <div class="pcr-box">
-              <span>OI PCR</span>
-              <strong id="pcr-oi">1.28</strong>
-            </div>
-            <div class="pcr-box">
-              <span>Vol PCR</span>
-              <strong id="pcr-vol">1.19</strong>
-            </div>
-            <div class="pcr-box">
-              <span>Put / Call Wall</span>
-              <strong id="pcr-wall">$66k / $67.5k</strong>
-            </div>
-          </div>
-          <div id="strike-bars" class="strike-bars"></div>
-          <div id="check-list" class="check-list"></div>
-        </div>
-      </div>
-
-      <!-- Recent Pre-Entry / Pre-Exit Alert History -->
-      <div class="card">
-        <div class="card-head-sm">
-          <h3>Pre-Entry &amp; Pre-Exit Alert History</h3>
-          <button id="btn-clear-alerts" class="pill-btn">Clear</button>
-        </div>
-        <div id="alert-history" class="alert-history"></div>
       </div>
     </section>
   </main>

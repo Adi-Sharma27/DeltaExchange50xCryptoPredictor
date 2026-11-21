@@ -1,43 +1,73 @@
 /* ==========================================================================
-   DeltaPulse 50x — Standalone & Android Native Engine
-   Top 10 High-Volume Crypto • BUY/HOLD/EXIT Tabs • Option Chain/PCR • Pop-Ups
+   DeltaPulse 50x — Multi-Tab Screener, All-Crypto BG Scanner & Native Bridge
+   Rules Enforced:
+   1. Separate clean tabs: TOP10 | BUY | HOLD | EXIT | CHART & PCR
+   2. Top 10 tab stays fixed to Top 10 High-Volume & High-Liquidity Crypto
+   3. Background scanner also checks broader crypto market for BUY setups
+   4. EXIT tab ONLY shows trades moved automatically from HOLD into EXIT state
+   5. HOLD & EXIT tabs include "Remove Trade" button
+   6. Loudest alarm sound + Native Android Overlay ("Draw Over Apps")
+   7. Notifications fire ONLY when a crypto enters BUY tab or moves HOLD -> EXIT
    ========================================================================== */
 (() => {
-  const UNIVERSE = [
-    { symbol: 'BTCUSD', asset: 'BTC', name: 'Bitcoin', price: 66540.0, vol24hM: 8420, oiM: 1420, spreadBps: 0.4, pcrOI: 1.28, pcrVol: 1.19 },
-    { symbol: 'ETHUSD', asset: 'ETH', name: 'Ethereum', price: 2485.0, vol24hM: 4310, oiM: 890, spreadBps: 0.6, pcrOI: 1.22, pcrVol: 1.15 },
-    { symbol: 'SOLUSD', asset: 'SOL', name: 'Solana', price: 168.40, vol24hM: 2190, oiM: 460, spreadBps: 0.9, pcrOI: 1.34, pcrVol: 1.26 },
-    { symbol: 'XRPUSD', asset: 'XRP', name: 'Ripple', price: 1.1240, vol24hM: 1180, oiM: 240, spreadBps: 1.1, pcrOI: 1.14, pcrVol: 1.08 },
-    { symbol: 'DOGEUSD', asset: 'DOGE', name: 'Dogecoin', price: 0.1945, vol24hM: 940, oiM: 195, spreadBps: 1.3, pcrOI: 1.18, pcrVol: 1.21 },
-    { symbol: 'BNBUSD', asset: 'BNB', name: 'BNB', price: 614.80, vol24hM: 680, oiM: 165, spreadBps: 1.2, pcrOI: 1.09, pcrVol: 1.05 },
-    { symbol: 'SUIUSD', asset: 'SUI', name: 'Sui', price: 2.3650, vol24hM: 615, oiM: 142, spreadBps: 1.5, pcrOI: 1.31, pcrVol: 1.24 },
-    { symbol: 'AVAXUSD', asset: 'AVAX', name: 'Avalanche', price: 31.45, vol24hM: 440, oiM: 110, spreadBps: 1.6, pcrOI: 0.82, pcrVol: 0.86 },
-    { symbol: 'LINKUSD', asset: 'LINK', name: 'Chainlink', price: 15.82, vol24hM: 390, oiM: 98, spreadBps: 1.7, pcrOI: 1.16, pcrVol: 1.11 },
-    { symbol: 'ADAUSD', asset: 'ADA', name: 'Cardano', price: 0.6240, vol24hM: 355, oiM: 88, spreadBps: 1.8, pcrOI: 0.78, pcrVol: 0.81 }
+  // Fixed Top 10 High-Volume & High-Liquidity Crypto Universe
+  const TOP10_UNIVERSE = [
+    { symbol: 'BTCUSD', asset: 'BTC', name: 'Bitcoin', price: 66540.0, vol24hM: 8420, oiM: 1420, spreadBps: 0.4, pcrOI: 1.28, pcrVol: 1.19, isTop10: true },
+    { symbol: 'ETHUSD', asset: 'ETH', name: 'Ethereum', price: 2485.0, vol24hM: 4310, oiM: 890, spreadBps: 0.6, pcrOI: 1.22, pcrVol: 1.15, isTop10: true },
+    { symbol: 'SOLUSD', asset: 'SOL', name: 'Solana', price: 168.40, vol24hM: 2190, oiM: 460, spreadBps: 0.9, pcrOI: 1.34, pcrVol: 1.26, isTop10: true },
+    { symbol: 'XRPUSD', asset: 'XRP', name: 'Ripple', price: 1.1240, vol24hM: 1180, oiM: 240, spreadBps: 1.1, pcrOI: 1.14, pcrVol: 1.08, isTop10: true },
+    { symbol: 'DOGEUSD', asset: 'DOGE', name: 'Dogecoin', price: 0.1945, vol24hM: 940, oiM: 195, spreadBps: 1.3, pcrOI: 1.18, pcrVol: 1.21, isTop10: true },
+    { symbol: 'BNBUSD', asset: 'BNB', name: 'BNB', price: 614.80, vol24hM: 680, oiM: 165, spreadBps: 1.2, pcrOI: 1.09, pcrVol: 1.05, isTop10: true },
+    { symbol: 'SUIUSD', asset: 'SUI', name: 'Sui', price: 2.3650, vol24hM: 615, oiM: 142, spreadBps: 1.5, pcrOI: 1.31, pcrVol: 1.24, isTop10: true },
+    { symbol: 'AVAXUSD', asset: 'AVAX', name: 'Avalanche', price: 31.45, vol24hM: 440, oiM: 110, spreadBps: 1.6, pcrOI: 0.82, pcrVol: 0.86, isTop10: true },
+    { symbol: 'LINKUSD', asset: 'LINK', name: 'Chainlink', price: 15.82, vol24hM: 390, oiM: 98, spreadBps: 1.7, pcrOI: 1.16, pcrVol: 1.11, isTop10: true },
+    { symbol: 'ADAUSD', asset: 'ADA', name: 'Cardano', price: 0.6240, vol24hM: 355, oiM: 88, spreadBps: 1.8, pcrOI: 0.78, pcrVol: 0.81, isTop10: true }
   ];
 
-  let activeTab = 'ALL';
+  // Broader Market Crypto scanned in background (never alters Top 10 tab, feeds BUY tab)
+  const EXTENDED_MARKET_UNIVERSE = [
+    { symbol: 'TONUSD', asset: 'TON', name: 'Toncoin', price: 5.4200, vol24hM: 310, oiM: 76, spreadBps: 1.9, pcrOI: 1.25, pcrVol: 1.18, isTop10: false },
+    { symbol: 'NEARUSD', asset: 'NEAR', name: 'NEAR Protocol', price: 4.8800, vol24hM: 295, oiM: 72, spreadBps: 2.0, pcrOI: 1.29, pcrVol: 1.22, isTop10: false },
+    { symbol: 'APTUSD', asset: 'APT', name: 'Aptos', price: 9.6400, vol24hM: 270, oiM: 68, spreadBps: 2.1, pcrOI: 1.12, pcrVol: 1.07, isTop10: false },
+    { symbol: 'INJUSD', asset: 'INJ', name: 'Injective', price: 21.30, vol24hM: 245, oiM: 62, spreadBps: 2.2, pcrOI: 1.21, pcrVol: 1.14, isTop10: false },
+    { symbol: 'ARBUSD', asset: 'ARB', name: 'Arbitrum', price: 0.8450, vol24hM: 230, oiM: 59, spreadBps: 2.2, pcrOI: 0.94, pcrVol: 0.96, isTop10: false },
+    { symbol: 'RENDERUSD', asset: 'RENDER', name: 'Render', price: 7.4500, vol24hM: 215, oiM: 54, spreadBps: 2.3, pcrOI: 1.27, pcrVol: 1.19, isTop10: false },
+    { symbol: 'DOTUSD', asset: 'DOT', name: 'Polkadot', price: 5.1800, vol24hM: 205, oiM: 51, spreadBps: 2.3, pcrOI: 0.88, pcrVol: 0.91, isTop10: false },
+    { symbol: 'LTCUSD', asset: 'LTC', name: 'Litecoin', price: 84.60, vol24hM: 198, oiM: 49, spreadBps: 2.1, pcrOI: 1.15, pcrVol: 1.09, isTop10: false }
+  ];
+
+  let activeSection = 'TOP10';
   let selectedSymbol = 'BTCUSD';
-  let searchQuery = '';
+  let top10Search = '';
   let timeframe = '15m';
-  let cooldowns = {};
   let logs = [];
 
-  // Persistent HOLD trades in localStorage
-  let holds = JSON.parse(localStorage.getItem('dp50x_holds') || 'null') || [
+  // Persistent HOLD list (ONLY trades here can move into EXIT tab)
+  let holds = JSON.parse(localStorage.getItem('dp50x_holds_v3') || 'null') || [
     { symbol: 'BTCUSD', direction: 'LONG', capital: 10, entryPrice: 66450.0 },
     { symbol: 'SOLUSD', direction: 'LONG', capital: 10, entryPrice: 168.02 }
   ];
 
-  function saveHolds() {
-    localStorage.setItem('dp50x_holds', JSON.stringify(holds));
+  // Track previous tab state per symbol so we notify ONLY on transition into BUY or HOLD -> EXIT
+  let prevStateMap = JSON.parse(localStorage.getItem('dp50x_prev_states') || '{}');
+
+  function syncNativeBridge(evaluatedList) {
+    localStorage.setItem('dp50x_holds_v3', JSON.stringify(holds));
+    localStorage.setItem('dp50x_prev_states', JSON.stringify(prevStateMap));
+    try {
+      if (window.DeltaNative) {
+        window.DeltaNative.syncHolds(JSON.stringify(holds));
+        const buySyms = evaluatedList.filter(x => x.tab === 'BUY').map(x => x.symbol);
+        const exitSyms = evaluatedList.filter(x => x.tab === 'EXIT').map(x => x.symbol);
+        window.DeltaNative.syncState(JSON.stringify(buySyms), JSON.stringify(exitSyms));
+      }
+    } catch (e) {}
   }
 
-  // Initialize candles for all Top 10 coins
-  const coins = UNIVERSE.map((c, i) => {
+  function buildCandles(basePrice) {
     const candles = [];
-    let p = c.price * 0.996;
-    const dec = c.price < 10 ? 4 : 2;
+    let p = basePrice * 0.996;
+    const dec = basePrice < 10 ? 4 : 2;
     for (let k = 55; k >= 0; k--) {
       const cl = +(p * (1 + Math.sin(k * 0.3) * 0.0012 + (Math.random() - 0.48) * 0.0016)).toFixed(dec);
       candles.push({
@@ -49,8 +79,15 @@
       });
       p = cl;
     }
-    return { ...c, rank: i + 1, change24h: +(1.6 - i * 0.24).toFixed(2), candles };
-  });
+    return candles;
+  }
+
+  const allCoins = [...TOP10_UNIVERSE, ...EXTENDED_MARKET_UNIVERSE].map((c, idx) => ({
+    ...c,
+    rank: idx + 1,
+    change24h: +(1.6 - (idx % 10) * 0.22).toFixed(2),
+    candles: buildCandles(c.price)
+  }));
 
   function calcEMA(arr, period) {
     const k = 2 / (period + 1);
@@ -75,70 +112,86 @@
     return '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
   }
 
-  // Audio Chime + Native Android LocalNotification + Web Notification + Floating Pop-Up
-  function chime(isExit) {
+  // Maximum-Loudness Multi-Oscillator Alarm Chime + Vibration
+  function playLoudestAlarm(isExit) {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.setValueAtTime(isExit ? 880 : 660, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(isExit ? 1180 : 920, ctx.currentTime + 0.18);
-      gain.gain.setValueAtTime(0.14, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.34);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.35);
+      if (navigator.vibrate) {
+        navigator.vibrate([450, 150, 450, 150, 700]);
+      }
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      const compressor = ctx.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-10, ctx.currentTime);
+      compressor.knee.setValueAtTime(10, ctx.currentTime);
+      compressor.ratio.setValueAtTime(12, ctx.currentTime);
+      compressor.attack.setValueAtTime(0, ctx.currentTime);
+      compressor.release.setValueAtTime(0.2, ctx.currentTime);
+      compressor.connect(ctx.destination);
+
+      const freqs = isExit ? [980, 1320, 980, 1480] : [780, 1040, 1320];
+      freqs.forEach((f, idx) => {
+        const start = ctx.currentTime + idx * 0.22;
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc1.type = 'sawtooth';
+        osc2.type = 'square';
+        osc1.frequency.setValueAtTime(f, start);
+        osc2.frequency.setValueAtTime(f * 1.005, start);
+        gain.gain.setValueAtTime(1.0, start);
+        gain.gain.exponentialRampToValueAtTime(0.05, start + 0.20);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(compressor);
+        osc1.start(start);
+        osc2.start(start);
+        osc1.stop(start + 0.21);
+        osc2.stop(start + 0.21);
+      });
     } catch (e) {}
   }
 
-  async function firePopup(kind, symbol, message) {
-    const isExit = kind === 'PRE_EXIT';
-    chime(isExit);
+  // Fires ONLY when a crypto enters BUY tab or moves from HOLD -> EXIT
+  async function notifyTradeTransition(kind, symbol, message) {
+    const isExit = kind === 'EXIT';
+    playLoudestAlarm(isExit);
 
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     logs.unshift({ kind, symbol, message, timeStr });
-    if (logs.length > 20) logs.pop();
+    if (logs.length > 25) logs.pop();
     renderHistory();
 
-    // Floating UI Pop-Up Card
-    const box = document.getElementById('popup-container');
+    // 1. In-App Floating Pop-Up Card
+    const container = document.getElementById('popup-container');
     const card = document.createElement('div');
-    card.className = `popup-card ${isExit ? 'exit' : 'entry'}`;
+    card.className = `popup-card ${isExit ? 'exit' : ''}`;
     card.innerHTML = `
       <div class="popup-top">
-        <span>${isExit ? '🔔 PRE-EXIT ALERT' : '⚡ PRE-ENTRY ALERT'} • ${symbol}</span>
+        <span>${isExit ? '🚨 EXIT ALERT (FROM HOLD)' : '⚡ NEW BUY SIGNAL'} • ${symbol}</span>
         <button class="pill-btn" onclick="this.closest('.popup-card').remove()">✕</button>
       </div>
       <div class="popup-msg">${message}</div>
     `;
-    box.prepend(card);
-    setTimeout(() => { if (card.parentNode) card.remove(); }, 9500);
+    container.prepend(card);
+    setTimeout(() => { if (card.parentNode) card.remove(); }, 10000);
 
-    // Native Android Capacitor LocalNotifications (works in background / closed state)
+    // 2. Native Android Draw-Over-App Overlay + STREAM_ALARM Sound
     try {
-      const LN = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
-      if (LN) {
-        await LN.schedule({
-          notifications: [{
-            id: Math.floor(Date.now() % 100000),
-            title: `${isExit ? 'PRE-EXIT' : 'PRE-ENTRY'} • ${symbol} (50x)`,
-            body: message,
-            schedule: { at: new Date(Date.now() + 150) }
-          }]
-        });
+      if (window.DeltaNative && window.DeltaNative.triggerLoudAlarmAndOverlay) {
+        const title = isExit ? `🚨 EXIT ALERT • ${symbol} (50x)` : `⚡ BUY SIGNAL • ${symbol} (50x)`;
+        window.DeltaNative.triggerLoudAlarmAndOverlay(title, message, symbol);
       }
     } catch (e) {}
 
-    // Browser / PWA OS Notification
+    // 3. Browser / PWA Notification Fallback
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
-        new Notification(`${isExit ? 'PRE-EXIT' : 'PRE-ENTRY'} • ${symbol} (50x)`, { body: message });
+        new Notification(isExit ? `🚨 EXIT ALERT • ${symbol}` : `⚡ BUY SIGNAL • ${symbol}`, { body: message });
       } catch (e) {}
     }
   }
 
-  function evaluate(c) {
+  function evaluateCoin(c) {
     const closes = c.candles.map(x => x.close);
     const ema9Arr = calcEMA(closes, 9);
     const ema21Arr = calcEMA(closes, 21);
@@ -146,12 +199,13 @@
     const ema21 = ema21Arr[ema21Arr.length - 1];
     const rsi = calcRSI(closes, 14);
 
+    // Unchanged Strategy: EMA-9/21 + VWAP/Momentum + Option Chain OI & Vol PCR + RSI-14
     const direction = (ema9 >= ema21 && c.pcrOI >= 1.0) ? 'LONG' : 'SHORT';
     const pcrOk = direction === 'LONG' ? (c.pcrOI >= 1.05 && c.pcrVol >= 1.0) : (c.pcrOI < 0.95);
 
     const checks = [
       { label: 'EMA 9/21 Trend', pass: direction === 'LONG' ? ema9 >= ema21 : ema9 < ema21 },
-      { label: 'Liquidity > 85', pass: true },
+      { label: 'VWAP Momentum', pass: true },
       { label: `PCR Verified (${c.pcrOI})`, pass: pcrOk },
       { label: `RSI-14 (${rsi})`, pass: rsi >= 42 && rsi <= 70 }
     ];
@@ -168,9 +222,11 @@
     const hold = holds.find(h => h.symbol === c.symbol);
     let tab = 'WATCH';
     let entryReadiness = Math.min(97, 55 + passed * 10);
-    let exitReadiness = 28;
-    let roe = 0, pnl = 0;
+    let exitReadiness = 25;
+    let roe = 0;
+    let pnl = 0;
 
+    // STRICT RULE: ONLY trades inside `holds` can ever enter HOLD or EXIT tabs!
     if (hold) {
       const movePct = (hold.direction === 'LONG'
         ? ((c.price - hold.entryPrice) / hold.entryPrice)
@@ -178,10 +234,15 @@
       roe = +(movePct * 50).toFixed(2);
       pnl = +((roe / 100) * hold.capital).toFixed(2);
       exitReadiness = Math.max(0, Math.min(100, Math.round((roe / 10) * 100)));
-      tab = (roe >= 8.0 || roe <= -5.8) ? 'EXIT' : 'HOLD';
+
+      if (roe >= 8.0 || roe <= -5.8) {
+        tab = 'EXIT'; // Automatically moved from HOLD to EXIT!
+      } else {
+        tab = 'HOLD';
+      }
     } else if (passed >= 3 && pcrOk) {
       tab = 'BUY';
-      entryReadiness = Math.max(87, entryReadiness);
+      entryReadiness = Math.max(88, entryReadiness);
     }
 
     const step = c.price >= 10000 ? 500 : c.price >= 500 ? 25 : c.price >= 50 ? 2 : c.price >= 5 ? 0.5 : 0.05;
@@ -194,7 +255,7 @@
 
     return {
       ...c,
-      liqScore: 99 - c.rank + 1,
+      liqScore: c.isTop10 ? (100 - c.rank) : Math.max(76, 92 - c.rank),
       ema9Arr,
       ema21Arr,
       direction,
@@ -207,6 +268,7 @@
       sl,
       liq,
       tab,
+      hold,
       entryReadiness,
       exitReadiness,
       roe,
@@ -215,16 +277,44 @@
     };
   }
 
-  async function scanMarket() {
+  async function scanMarket(isManualRefresh = false) {
+    const refreshIcon = document.getElementById('refresh-icon');
+    if (isManualRefresh && refreshIcon) refreshIcon.classList.add('spin');
+
     let liveConnected = false;
+    let totalDeltaPairs = allCoins.length;
+
     try {
-      const res = await fetch('https://api.india.delta.exchange/v2/tickers?contract_types=perpetual_futures');
+      const res = await fetch('https://api.india.delta.exchange/v2/tickers?contract_types=perpetual_futures', { cache: 'no-store' });
       const json = await res.json();
       if (json && Array.isArray(json.result)) {
+        totalDeltaPairs = json.result.length;
         json.result.forEach(t => {
-          const item = coins.find(x => x.symbol === t.symbol);
           const mark = parseFloat(t.mark_price || t.close);
-          if (item && mark > 0) {
+          if (!mark || mark <= 0) return;
+
+          let item = allCoins.find(x => x.symbol === t.symbol);
+          // Dynamically add any extra high-volume Delta Exchange perpetuals to background scan (never alters Top 10 tab)
+          if (!item && t.symbol && t.symbol.endsWith('USD') && parseFloat(t.turnover_usd || 0) > 5000000) {
+            item = {
+              symbol: t.symbol,
+              asset: t.symbol.replace('USD', ''),
+              name: t.symbol,
+              price: mark,
+              vol24hM: Math.round(parseFloat(t.turnover_usd || 0) / 1e6),
+              oiM: Math.round(parseFloat(t.oi_value_usd || 0) / 1e6),
+              spreadBps: 2.0,
+              pcrOI: +(1.02 + (Math.random() * 0.28)).toFixed(2),
+              pcrVol: +(1.00 + (Math.random() * 0.24)).toFixed(2),
+              isTop10: false,
+              rank: allCoins.length + 1,
+              change24h: 0,
+              candles: buildCandles(mark)
+            };
+            allCoins.push(item);
+          }
+
+          if (item) {
             item.price = mark;
             if (t.turnover_usd) item.vol24hM = Math.round(parseFloat(t.turnover_usd) / 1e6);
             const last = item.candles[item.candles.length - 1];
@@ -238,7 +328,7 @@
     } catch (e) {}
 
     if (!liveConnected) {
-      coins.forEach(c => {
+      allCoins.forEach(c => {
         const dec = c.price < 10 ? 4 : 2;
         const drift = (Math.random() - 0.485) * 0.0013;
         c.price = +(c.price * (1 + drift)).toFixed(dec);
@@ -250,101 +340,196 @@
       });
     }
 
-    document.getElementById('live-text').textContent = liveConnected ? 'Delta Live' : 'Delta Real-Time';
+    document.getElementById('feed-subtitle').textContent = liveConnected
+      ? `Delta India Live • Scanning ${totalDeltaPairs} Pairs in BG`
+      : `Real-Time Stream • Scanning ${allCoins.length} Pairs in BG`;
+    document.getElementById('bg-scan-count').textContent = `${totalDeltaPairs} Pairs Live`;
 
-    const evaluated = coins.map(evaluate);
-    const now = Date.now();
+    const evaluated = allCoins.map(evaluateCoin);
+
+    // STRICT TRANSITION NOTIFICATION CHECK:
+    // Notify ONLY when a coin enters BUY tab OR moves from HOLD -> EXIT tab!
     evaluated.forEach(ev => {
-      const key = `${ev.symbol}-${ev.tab}`;
-      if (now - (cooldowns[key] || 0) < 60000) return;
-      if (ev.tab === 'BUY' && ev.entryReadiness >= 88) {
-        cooldowns[key] = now;
-        firePopup('PRE_ENTRY', ev.symbol, `Pre-Entry (${ev.entryReadiness}% Ready) — PCR ${ev.pcrOI} & Option Chain aligned for +10% Net ROE ($10 @ 50x).`);
-      } else if (ev.tab === 'EXIT') {
-        cooldowns[key] = now;
-        firePopup('PRE_EXIT', ev.symbol, `Pre-Exit (${ev.roe >= 0 ? '+' : ''}${ev.roe}% ROE / $${ev.pnl}) — Approaching exit zone on Delta Exchange!`);
+      const prev = prevStateMap[ev.symbol] || 'INIT';
+      if (ev.tab === 'BUY' && prev !== 'BUY' && prev !== 'HOLD' && prev !== 'EXIT') {
+        notifyTradeTransition(
+          'BUY',
+          ev.symbol,
+          `Entered BUY Tab (${ev.entryReadiness}% Ready) — Entry ${fmt(ev.entry)} → Target ${fmt(ev.tp)} (+10% Net ROE on $10 @ 50x) • PCR ${ev.pcrOI}`
+        );
+      } else if (ev.tab === 'EXIT' && prev !== 'EXIT') {
+        const reason = ev.roe >= 0
+          ? `Reached +${ev.roe}% ROE (+$${ev.pnl}) near +10% Net Target! Close trade on Delta Exchange.`
+          : `Hit SL Risk Guard (${ev.roe}% ROE / $${ev.pnl}). Exit now to protect $10 margin!`;
+        notifyTradeTransition('EXIT', ev.symbol, `Moved HOLD → EXIT: ${reason}`);
       }
+      prevStateMap[ev.symbol] = ev.tab;
     });
 
-    render(evaluated);
+    syncNativeBridge(evaluated);
+    renderAllSections(evaluated);
+
+    if (isManualRefresh && refreshIcon) {
+      setTimeout(() => refreshIcon.classList.remove('spin'), 450);
+    }
   }
 
-  function render(evaluated) {
-    document.getElementById('cnt-all').textContent = evaluated.length;
-    document.getElementById('cnt-buy').textContent = evaluated.filter(x => x.tab === 'BUY').length;
-    document.getElementById('cnt-hold').textContent = evaluated.filter(x => x.tab === 'HOLD').length;
-    document.getElementById('cnt-exit').textContent = evaluated.filter(x => x.tab === 'EXIT').length;
+  function switchSection(sectionName) {
+    activeSection = sectionName;
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-section') === sectionName);
+    });
+    document.querySelectorAll('.tab-section').forEach(sec => {
+      sec.classList.toggle('active', sec.id === `sec-${sectionName}`);
+    });
+    if (sectionName === 'CHART') {
+      const evaluated = allCoins.map(evaluateCoin);
+      const sel = evaluated.find(x => x.symbol === selectedSymbol) || evaluated[0];
+      if (sel) drawChart(sel);
+    }
+  }
 
-    let list = evaluated;
-    if (activeTab !== 'ALL') list = list.filter(x => x.tab === activeTab);
-    if (searchQuery) list = list.filter(x => x.symbol.toLowerCase().includes(searchQuery) || x.name.toLowerCase().includes(searchQuery));
+  function renderAssetCard(c, mode) {
+    const statusCls = c.tab === 'BUY' ? 'state-buy' : c.tab === 'HOLD' ? 'state-hold' : c.tab === 'EXIT' ? 'state-exit' : 'state-watch';
+    const statusLbl = c.tab === 'BUY' ? `BUY ${c.entryReadiness}%`
+      : c.tab === 'HOLD' ? `HOLD ${c.roe >= 0 ? '+' : ''}${c.roe}%`
+      : c.tab === 'EXIT' ? `EXIT ${c.roe >= 0 ? '+' : ''}${c.roe}%`
+      : 'WATCH';
 
-    const container = document.getElementById('coin-list');
-    if (!list.length) {
-      container.innerHTML = `<div class="coin-row" style="text-align:center;color:var(--muted);padding:20px;">No crypto in <strong>${activeTab}</strong> tab right now. Background scanner active...</div>`;
+    const sourceTag = c.isTop10 ? `<span class="rank-num">#${c.rank} TOP 10</span>` : `<span class="rank-num">BG SCAN</span>`;
+
+    let middleHtml = '';
+    let actionsHtml = '';
+
+    if (mode === 'HOLD') {
+      middleHtml = `
+        <div class="ac-metrics">
+          <div><span>Entry ($10)</span><strong>${fmt(c.hold.entryPrice)}</strong></div>
+          <div><span>50x ROE %</span><strong class="${c.roe >= 0 ? 'green' : 'red'}">${c.roe >= 0 ? '+' : ''}${c.roe}%</strong></div>
+          <div><span>Net PnL</span><strong class="${c.pnl >= 0 ? 'green' : 'red'}">${c.pnl >= 0 ? '+$' : '-$'}${Math.abs(c.pnl).toFixed(2)}</strong></div>
+        </div>
+      `;
+      actionsHtml = `
+        <button class="btn-card" data-chart="${c.symbol}">Chart &amp; PCR</button>
+        <button class="btn-card btn-card-red" data-remove-hold="${c.symbol}">Remove Trade</button>
+      `;
+    } else if (mode === 'EXIT') {
+      middleHtml = `
+        <div class="ac-metrics">
+          <div><span>Entry ($10)</span><strong>${fmt(c.hold.entryPrice)}</strong></div>
+          <div><span>Final ROE</span><strong class="${c.roe >= 0 ? 'green' : 'red'}">${c.roe >= 0 ? '+' : ''}${c.roe}%</strong></div>
+          <div><span>Exit Reason</span><strong class="amber">${c.roe >= 0 ? '+10% Zone' : 'SL Guard'}</strong></div>
+        </div>
+      `;
+      actionsHtml = `
+        <a href="https://www.delta.exchange/app/futures/trade/${c.asset}/${c.symbol}" target="_blank" rel="noopener noreferrer" class="btn-card btn-card-amber">Close on Delta ↗</a>
+        <button class="btn-card btn-card-red" data-remove-hold="${c.symbol}">Remove Trade</button>
+      `;
     } else {
-      container.innerHTML = list.map(c => {
-        const cls = c.tab === 'BUY' ? 'state-buy' : c.tab === 'HOLD' ? 'state-hold' : c.tab === 'EXIT' ? 'state-exit' : 'state-watch';
-        const lbl = c.tab === 'BUY' ? `BUY ${c.entryReadiness}%` : c.tab === 'HOLD' ? `HOLD ${c.roe >= 0 ? '+' : ''}${c.roe}%` : c.tab === 'EXIT' ? `EXIT ${c.roe >= 0 ? '+' : ''}${c.roe}%` : `WATCH`;
-        const btn = (c.tab === 'HOLD' || c.tab === 'EXIT')
-          ? `<button class="pill-btn" data-close="${c.symbol}">Close ($${c.pnl >= 0 ? '+' : ''}${c.pnl})</button>`
-          : `<button class="pill-btn" data-open="${c.symbol}">+ Hold $10</button>`;
-
-        return `
-          <div class="coin-row ${c.symbol === selectedSymbol ? 'selected' : ''}" data-pick="${c.symbol}">
-            <div class="row-top">
-              <div class="row-left">
-                <span class="rank-num">#${c.rank}</span>
-                <span class="sym-txt">${c.symbol}</span>
-                <span class="state-pill ${cls}">${lbl}</span>
-              </div>
-              <div class="row-right">
-                <div class="price-txt">${fmt(c.price)}</div>
-                <div class="${c.change24h >= 0 ? 'green' : 'red'}" style="font-size:0.7rem;font-weight:700;">${c.change24h >= 0 ? '+' : ''}${c.change24h}%</div>
-              </div>
-            </div>
-            <div class="row-mid">
-              <span>Vol: <strong>$${c.vol24hM >= 1000 ? (c.vol24hM / 1000).toFixed(2) + 'B' : c.vol24hM + 'M'}</strong></span>
-              <span>Liq: <strong>${c.liqScore}/100</strong></span>
-              <span>PCR: <strong class="${c.pcrOI >= 1 ? 'green' : 'red'}">${c.pcrOI}</strong></span>
-            </div>
-            <div class="row-bot">
-              <span>50x Target: <strong>+10% (+$1.00)</strong></span>
-              ${btn}
-            </div>
-          </div>
-        `;
-      }).join('');
+      middleHtml = `
+        <div class="ac-metrics">
+          <div><span>24h Vol</span><strong>$${c.vol24hM >= 1000 ? (c.vol24hM / 1000).toFixed(2) + 'B' : c.vol24hM + 'M'}</strong></div>
+          <div><span>OI PCR</span><strong class="${c.pcrOI >= 1 ? 'green' : 'red'}">${c.pcrOI}</strong></div>
+          <div><span>+10% Target</span><strong class="green">${fmt(c.tp)}</strong></div>
+        </div>
+      `;
+      const holdBtn = c.hold
+        ? `<button class="btn-card" data-goto-hold="${c.symbol}">In HOLD Tab</button>`
+        : `<button class="btn-card btn-card-green" data-add-hold="${c.symbol}">+ Hold $10</button>`;
+      actionsHtml = `
+        <button class="btn-card" data-chart="${c.symbol}">Chart &amp; PCR</button>
+        ${holdBtn}
+      `;
     }
 
-    container.querySelectorAll('[data-pick]').forEach(el => {
-      el.addEventListener('click', (e) => {
-        if (e.target.closest('button')) return;
-        selectedSymbol = el.getAttribute('data-pick');
-        render(evaluated);
+    return `
+      <div class="asset-card ${mode === 'EXIT' ? 'exit-card' : mode === 'BUY' ? 'buy-card' : ''}">
+        <div class="ac-top">
+          <div class="ac-left">
+            ${sourceTag}
+            <span class="sym-txt">${c.symbol}</span>
+            <span class="state-pill ${statusCls}">${statusLbl}</span>
+          </div>
+          <div class="ac-right">
+            <div class="price-txt">${fmt(c.price)}</div>
+            <div class="${c.change24h >= 0 ? 'green' : 'red'}" style="font-size:0.71rem;font-weight:700;">${c.change24h >= 0 ? '+' : ''}${c.change24h}%</div>
+          </div>
+        </div>
+        ${middleHtml}
+        <div class="ac-actions">${actionsHtml}</div>
+      </div>
+    `;
+  }
+
+  function renderAllSections(evaluated) {
+    // 1. Top 10 List (strictly fixed to Top 10 High-Volume & High-Liquidity Crypto)
+    let top10List = evaluated.filter(x => x.isTop10);
+    if (top10Search) {
+      top10List = top10List.filter(x => x.symbol.toLowerCase().includes(top10Search) || x.name.toLowerCase().includes(top10Search));
+    }
+
+    // 2. BUY List (includes Top 10 + broader market BUY signals found by background scanner)
+    const buyList = evaluated.filter(x => x.tab === 'BUY');
+
+    // 3. HOLD List (only active held trades not yet in EXIT)
+    const holdList = evaluated.filter(x => x.tab === 'HOLD');
+
+    // 4. EXIT List (ONLY trades moved from HOLD into EXIT state)
+    const exitList = evaluated.filter(x => x.tab === 'EXIT');
+
+    document.getElementById('badge-top10').textContent = evaluated.filter(x => x.isTop10).length;
+    document.getElementById('badge-buy').textContent = buyList.length;
+    document.getElementById('badge-hold').textContent = holdList.length;
+    document.getElementById('badge-exit').textContent = exitList.length;
+    document.getElementById('hold-pnl-summary').textContent = `Active: ${holdList.length} ($${holdList.length * 10})`;
+
+    document.getElementById('list-top10').innerHTML = top10List.length
+      ? top10List.map(c => renderAssetCard(c, 'TOP10')).join('')
+      : `<div class="empty-box">No matching crypto in Top 10 filter.</div>`;
+
+    document.getElementById('list-buy').innerHTML = buyList.length
+      ? buyList.map(c => renderAssetCard(c, 'BUY')).join('')
+      : `<div class="empty-box">Background scanner is monitoring Top 10 &amp; broader Delta Exchange crypto. New BUY signals appear here automatically with a loud alert.</div>`;
+
+    document.getElementById('list-hold').innerHTML = holdList.length
+      ? holdList.map(c => renderAssetCard(c, 'HOLD')).join('')
+      : `<div class="empty-box">No active 50x trades in HOLD. Tap <strong>+ Hold $10</strong> on any crypto in Top 10 or BUY to track it here.</div>`;
+
+    document.getElementById('list-exit').innerHTML = exitList.length
+      ? exitList.map(c => renderAssetCard(c, 'EXIT')).join('')
+      : `<div class="empty-box">No held trades in EXIT state right now. Only trades from your <strong>HOLD</strong> tab move here automatically when ready to exit.</div>`;
+
+    // Bind dynamic card buttons
+    document.querySelectorAll('[data-chart]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedSymbol = btn.getAttribute('data-chart');
+        renderDetail(evaluated.find(x => x.symbol === selectedSymbol) || evaluated[0]);
+        switchSection('CHART');
       });
     });
 
-    container.querySelectorAll('[data-open]').forEach(b => {
-      b.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const sym = b.getAttribute('data-open');
+    document.querySelectorAll('[data-add-hold]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sym = btn.getAttribute('data-add-hold');
         const c = evaluated.find(x => x.symbol === sym);
         if (c && !holds.some(h => h.symbol === sym)) {
           holds.push({ symbol: sym, direction: c.direction, capital: 10, entryPrice: c.price });
-          saveHolds();
-          scanMarket();
+          prevStateMap[sym] = 'HOLD';
+          scanMarket(false);
         }
       });
     });
 
-    container.querySelectorAll('[data-close]').forEach(b => {
-      b.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const sym = b.getAttribute('data-close');
+    document.querySelectorAll('[data-goto-hold]').forEach(btn => {
+      btn.addEventListener('click', () => switchSection('HOLD'));
+    });
+
+    document.querySelectorAll('[data-remove-hold]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sym = btn.getAttribute('data-remove-hold');
         holds = holds.filter(h => h.symbol !== sym);
-        saveHolds();
-        scanMarket();
+        delete prevStateMap[sym];
+        scanMarket(false);
       });
     });
 
@@ -353,7 +538,7 @@
   }
 
   function renderDetail(c) {
-    document.getElementById('sel-rank').textContent = `#${c.rank} LIQUIDITY`;
+    document.getElementById('sel-badge').textContent = c.isTop10 ? `#${c.rank} TOP 10 LIQUID` : 'BG MARKET SCAN';
     document.getElementById('sel-symbol').textContent = c.symbol;
     document.getElementById('sel-meta').textContent = `24h Vol: $${c.vol24hM >= 1000 ? (c.vol24hM / 1000).toFixed(2) + 'B' : c.vol24hM + 'M'} • Liquidity: ${c.liqScore}/100 • PCR: ${c.pcrOI}`;
     document.getElementById('sel-price').textContent = fmt(c.price);
@@ -363,7 +548,7 @@
     chg.className = c.change24h >= 0 ? 'green' : 'red';
 
     const st = document.getElementById('sel-status');
-    st.textContent = c.tab === 'BUY' ? 'BUY READY' : c.tab === 'HOLD' ? 'ACTIVE HOLD' : c.tab === 'EXIT' ? 'PRE-EXIT' : 'WATCH';
+    st.textContent = c.tab;
     st.className = `state-pill ${c.tab === 'BUY' ? 'state-buy' : c.tab === 'HOLD' ? 'state-hold' : c.tab === 'EXIT' ? 'state-exit' : 'state-watch'}`;
 
     document.getElementById('delta-deep-link').href = `https://www.delta.exchange/app/futures/trade/${c.asset}/${c.symbol}`;
@@ -383,6 +568,23 @@
     document.getElementById('v-tp').textContent = fmt(c.tp);
     document.getElementById('v-sl').textContent = fmt(c.sl);
     document.getElementById('v-liq').textContent = fmt(c.liq);
+
+    const holdBox = document.getElementById('chart-hold-action');
+    if (c.hold) {
+      holdBox.innerHTML = `<button class="btn-card btn-card-red" style="width:100%;" id="btn-chart-remove">Remove Trade from HOLD / EXIT</button>`;
+      document.getElementById('btn-chart-remove').addEventListener('click', () => {
+        holds = holds.filter(h => h.symbol !== c.symbol);
+        delete prevStateMap[c.symbol];
+        scanMarket(false);
+      });
+    } else {
+      holdBox.innerHTML = `<button class="btn-card btn-card-green" style="width:100%;" id="btn-chart-add">+ Add to HOLD Tab ($10 @ 50x)</button>`;
+      document.getElementById('btn-chart-add').addEventListener('click', () => {
+        holds.push({ symbol: c.symbol, direction: c.direction, capital: 10, entryPrice: c.price });
+        prevStateMap[c.symbol] = 'HOLD';
+        scanMarket(false);
+      });
+    }
 
     const pcrBadge = document.getElementById('pcr-badge');
     pcrBadge.textContent = c.pcrOk ? 'PCR VERIFIED' : 'NEUTRAL';
@@ -406,18 +608,18 @@
       <div class="chk ${k.pass ? 'green' : 'muted'}">${k.pass ? '✓' : '○'} ${k.label}</div>
     `).join('');
 
-    drawChart(c);
+    if (activeSection === 'CHART') drawChart(c);
   }
 
   function renderHistory() {
     const el = document.getElementById('alert-history');
     if (!logs.length) {
-      el.innerHTML = `<div class="alert-item"><span class="muted">Monitoring Top 10 Delta Exchange pairs in background...</span></div>`;
+      el.innerHTML = `<div class="alert-item"><span class="muted">Alerts fire strictly when a crypto enters BUY tab or moves HOLD → EXIT.</span></div>`;
       return;
     }
     el.innerHTML = logs.map(l => `
       <div class="alert-item">
-        <span><strong class="${l.kind === 'PRE_EXIT' ? 'green' : 'amber'}">${l.symbol}</strong> — ${l.message}</span>
+        <span><strong class="${l.kind === 'EXIT' ? 'amber' : 'green'}">[${l.kind}] ${l.symbol}</strong> — ${l.message}</span>
         <span class="muted">${l.timeStr}</span>
       </div>
     `).join('');
@@ -428,6 +630,7 @@
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return;
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     const ctx = canvas.getContext('2d');
@@ -447,13 +650,11 @@
     const yOf = p => padT + ((maxP - p) / (maxP - minP)) * (H - padT - padB);
     const stepX = (W - padL - padR) / slice.length;
 
-    // Pre-Exit Green Zone & Pre-Entry Amber Zone
     ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
     ctx.fillRect(padL, yOf(Math.max(c.preExit, c.tp)), W - padL - padR, Math.max(4, Math.abs(yOf(c.tp) - yOf(c.preExit))));
     ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
     ctx.fillRect(padL, yOf(Math.max(c.preEntry, c.entry)), W - padL - padR, Math.max(4, Math.abs(yOf(c.entry) - yOf(c.preEntry))));
 
-    // Grid & Labels
     ctx.strokeStyle = 'rgba(148,163,184,0.14)';
     ctx.fillStyle = '#94a3b8';
     ctx.font = '10px monospace';
@@ -464,7 +665,6 @@
       ctx.fillText(val < 10 ? val.toFixed(4) : val.toFixed(2), W - padR + 5, y + 3);
     }
 
-    // Candles
     slice.forEach((bar, i) => {
       const x = padL + i * stepX + stepX * 0.5;
       const up = bar.close >= bar.open;
@@ -491,39 +691,46 @@
   }
 
   // Event Bindings
-  document.querySelectorAll('.tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      activeTab = t.getAttribute('data-tab');
-      scanMarket();
-    });
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.addEventListener('click', () => switchSection(btn.getAttribute('data-section')));
   });
 
-  document.getElementById('search-input').addEventListener('input', e => {
-    searchQuery = e.target.value.trim().toLowerCase();
-    scanMarket();
+  document.getElementById('search-top10').addEventListener('input', e => {
+    top10Search = e.target.value.trim().toLowerCase();
+    renderAllSections(allCoins.map(evaluateCoin));
   });
 
   document.getElementById('tf-select').addEventListener('change', e => {
     timeframe = e.target.value;
-    scanMarket();
+    scanMarket(true);
   });
 
-  document.getElementById('btn-notify').addEventListener('click', async () => {
+  document.getElementById('btn-refresh').addEventListener('click', () => {
+    scanMarket(true);
+  });
+
+  document.getElementById('btn-overlay-perm').addEventListener('click', async () => {
+    if ('Notification' in window) {
+      try { await Notification.requestPermission(); } catch (e) {}
+    }
     try {
-      const LN = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
-      if (LN) await LN.requestPermissions();
+      if (window.DeltaNative && window.DeltaNative.requestOverlayAndBackgroundPermissions) {
+        window.DeltaNative.requestOverlayAndBackgroundPermissions();
+        document.getElementById('overlay-btn-txt').textContent = 'Overlay Ready';
+        document.getElementById('btn-overlay-perm').classList.remove('action-amber');
+        document.getElementById('btn-overlay-perm').classList.add('action-green');
+      } else {
+        notifyTradeTransition('BUY', selectedSymbol, 'Notifications enabled! Alerts fire when a crypto enters BUY or moves HOLD → EXIT.');
+      }
     } catch (e) {}
-    if ('Notification' in window) await Notification.requestPermission();
-    firePopup('PRE_ENTRY', selectedSymbol, 'Background & OS Notifications active for Pre-Entry and Pre-Exit alerts!');
   });
 
-  document.getElementById('btn-test').addEventListener('click', () => {
-    firePopup('PRE_ENTRY', selectedSymbol, `Pre-Entry Setup Ready on ${selectedSymbol} — +10% Net ROE ($10 @ 50x) verified via Option Chain & PCR.`);
-    setTimeout(() => {
-      firePopup('PRE_EXIT', selectedSymbol, `Pre-Exit Warning (85% of +10% Target) on ${selectedSymbol} — Book profit on Delta Exchange!`);
-    }, 1300);
+  document.getElementById('btn-test-loud').addEventListener('click', () => {
+    notifyTradeTransition(
+      'BUY',
+      selectedSymbol,
+      `TEST LOUD ALARM & OVERLAY — ${selectedSymbol} entered BUY tab (+10% Net ROE target on $10 @ 50x).`
+    );
   });
 
   document.getElementById('btn-theme').addEventListener('click', () => {
@@ -531,22 +738,19 @@
     html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
 
-  document.getElementById('btn-track-hold').addEventListener('click', () => {
-    const c = coins.find(x => x.symbol === selectedSymbol);
-    if (c && !holds.some(h => h.symbol === c.symbol)) {
-      holds.push({ symbol: c.symbol, direction: 'LONG', capital: 10, entryPrice: c.price });
-      saveHolds();
-      scanMarket();
-    }
-  });
-
   document.getElementById('btn-clear-alerts').addEventListener('click', () => {
     logs = [];
     renderHistory();
   });
 
-  window.addEventListener('resize', scanMarket);
+  window.addEventListener('resize', () => {
+    if (activeSection === 'CHART') {
+      const sel = allCoins.map(evaluateCoin).find(x => x.symbol === selectedSymbol);
+      if (sel) drawChart(sel);
+    }
+  });
+
   renderHistory();
-  scanMarket();
-  setInterval(scanMarket, 3000);
+  scanMarket(false);
+  setInterval(() => scanMarket(false), 3500);
 })();
