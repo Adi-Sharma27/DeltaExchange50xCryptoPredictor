@@ -125,6 +125,15 @@ body {
 .strat-item span { font-size: 0.63rem; color: var(--muted); text-transform: uppercase; }
 .strat-item strong { font-size: 0.76rem; }
 
+.mini-select {
+  background: transparent;
+  color: var(--text);
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  outline: none;
+}
+
 /* Main 5-Section Navigation Tabs */
 .main-tabs {
   display: grid;
@@ -155,7 +164,7 @@ body {
 .nav-tab.tab-exit.active { color: var(--amber); border-bottom-color: var(--amber); background: rgba(245, 158, 11, 0.07); }
 
 .tab-badge {
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   padding: 1px 5px;
   border-radius: 999px;
   background: var(--elev);
@@ -222,12 +231,22 @@ body {
 
 .ac-top { display: flex; justify-content: space-between; align-items: center; }
 .ac-left { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.rank-num { font-size: 0.67rem; font-weight: 700; color: var(--muted); background: var(--elev); padding: 2px 6px; border-radius: 5px; }
-.rank-top5 { font-size: 0.67rem; font-weight: 800; color: var(--green); background: var(--green-bg); padding: 2px 6px; border-radius: 5px; }
-.hold-tag { font-size: 0.66rem; font-weight: 700; color: var(--amber); background: var(--amber-bg); padding: 2px 6px; border-radius: 5px; }
+.rank-num { font-size: 0.66rem; font-weight: 700; color: var(--muted); background: var(--elev); padding: 2px 6px; border-radius: 5px; }
 .sym-txt { font-weight: 800; font-size: 0.96rem; }
 .ac-right { text-align: right; }
 .price-txt { font-weight: 800; font-size: 0.94rem; font-variant-numeric: tabular-nums; }
+
+.hold-horizon-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.69rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.09);
+  color: var(--blue);
+  font-weight: 700;
+}
 
 .ac-metrics {
   display: grid;
@@ -245,7 +264,7 @@ body {
 .ac-actions {
   display: flex;
   gap: 6px;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .btn-card {
@@ -267,7 +286,7 @@ body {
 .btn-card-amber { background: var(--amber); color: #0b0f17; border-color: var(--amber); }
 
 .state-pill {
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   font-weight: 800;
   padding: 2px 6px;
   border-radius: 5px;
@@ -277,6 +296,15 @@ body {
 .state-hold { background: var(--blue-bg); color: var(--blue); }
 .state-exit { background: var(--amber-bg); color: var(--amber); }
 .state-watch { background: var(--elev); color: var(--muted); }
+
+.dur-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--blue-bg);
+  color: var(--blue);
+}
 
 .empty-box {
   grid-column: 1 / -1;
@@ -294,7 +322,7 @@ body {
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
 
 .selected-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-.sym-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sym-line { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .sym-line h2 { font-size: 1.25rem; font-weight: 800; }
 .rank-tag { font-size: 0.66rem; font-weight: 700; padding: 2px 6px; border-radius: 5px; background: var(--blue-bg); color: var(--blue); }
 
@@ -314,11 +342,12 @@ body {
 .radar-card small { font-size: 0.67rem; color: var(--muted); }
 
 .chart-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.legend-row { display: flex; gap: 10px; font-size: 0.71rem; color: var(--muted); }
+.legend-row { display: flex; gap: 10px; font-size: 0.71rem; color: var(--muted); flex-wrap: wrap; }
 .legend-row span { display: inline-flex; align-items: center; gap: 4px; }
 .swatch { display: inline-block; width: 9px; height: 3px; border-radius: 2px; }
 .ema9 { background: #38bdf8; }
 .ema21 { background: #a855f7; }
+.vwap-l { background: #facc15; }
 .entry-z { background: var(--amber); height: 7px; }
 .exit-z { background: var(--green); height: 7px; }
 .ohlc-readout { font-size: 0.7rem; font-family: monospace; color: var(--muted); }
